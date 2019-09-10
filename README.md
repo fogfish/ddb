@@ -19,11 +19,6 @@ trait KeyVal[T] {
 }
 ```
 
-The library support
-- [x] [AWS DynamoDB](https://aws.amazon.com/dynamodb)
-- [ ] [AWS S3](https://aws.amazon.com/s3)
-
-
 ## Getting started
 
 The latest version of the library is available at its `master` branch. All development, including new features and bug fixes, take place on the `master` branch using forking and pull requests as described in contribution guidelines.
@@ -36,10 +31,9 @@ The latest version of the library is available at its `master` branch. All devel
 ]}.
 ```
 
-### Usage
-
-tbd
-
+See the library usage with supported services 
+- [x] [AWS DynamoDB](doc/ddb.md)
+- [ ] [AWS S3](doc/s3.md)
 
 ## How To Contribute
 
