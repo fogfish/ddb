@@ -1,0 +1,22 @@
+{"1.1.0",
+[{<<"base16">>,{pkg,<<"base16">>,<<"1.0.0">>},1},
+ {<<"datum">>,{pkg,<<"datum">>,<<"4.6.0">>},0},
+ {<<"eini">>,{pkg,<<"eini">>,<<"1.2.6">>},1},
+ {<<"erlcloud">>,{pkg,<<"erlcloud">>,<<"3.2.12">>},0},
+ {<<"feta">>,
+  {git,"https://github.com/fogfish/feta",
+       {ref,"c5d251b3f995b96afd5e8ec7da61516842aa658c"}},
+  0},
+ {<<"jsx">>,{pkg,<<"jsx">>,<<"2.9.0">>},1},
+ {<<"lhttpc">>,{pkg,<<"lhttpc">>,<<"1.6.2">>},1},
+ {<<"pipe">>,{pkg,<<"pipes">>,<<"2.0.1">>},0}]}.
+[
+{pkg_hash,[
+ {<<"base16">>, <<"283644E2B21BD5915ACB7178BED7851FB07C6E5749B8FAD68A53C501092176D9">>},
+ {<<"datum">>, <<"680B4694E1D13A140CF7759DBCA1BFA8139F602A05B1A1B03B998129BC80C515">>},
+ {<<"eini">>, <<"DFFA48476FD89FB6E41CEEA0ADFA1BC6E7862CCD6584417442F8BB37E5D34715">>},
+ {<<"erlcloud">>, <<"53B22DC4E080061E9865460D454E5DA47CA28C26F4CB9011A7DE98BFE120D830">>},
+ {<<"jsx">>, <<"D2F6E5F069C00266CAD52FB15D87C428579EA4D7D73A33669E12679E203329DD">>},
+ {<<"lhttpc">>, <<"044F16F0018C7AA7E945E9E9406C7F6035E0B8BC08BF77B00C78CE260E1071E3">>},
+ {<<"pipe">>, <<"A2B56796C63690ED0E78BB77BB389AF250BD70AFA15A6869369DBDC11087D68F">>}]}
+].

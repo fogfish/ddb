@@ -1,0 +1,17 @@
+{application, ddb,
+   [
+      {description, "aws generic database drivers"},
+      {vsn,         "git"},
+      {modules,     []},
+      {registered,  []},
+      {applications,[
+         kernel
+      ,  stdlib
+      ,  feta
+      ,  pipe
+      ,  datum
+      ,  erlcloud
+      ]},
+      {env, []}
+   ]
+}.
