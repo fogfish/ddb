@@ -11,13 +11,18 @@ Essentially, it uses generics to implement a following key-value trait to access
 
 ```scala
 trait KeyVal[T] {
-  def create(entity: T): T
-  def lookup(pattern: T): T
+  def put(entity: T): T
+  def get(pattern: T): T
   def remove(pattern: T): T
   def update(entity: T): T
   def match(pattern: T): Seq[T]
 }
 ```
+
+The library support
+- [x] [AWS DynamoDB](https://aws.amazon.com/dynamodb/)
+- [ ] [AWS S3](https://aws.amazon.com/s3/)
+
 
 ## Getting started
 
@@ -31,9 +36,62 @@ The latest version of the library is available at its `master` branch. All devel
 ]}.
 ```
 
-See the library usage with supported services 
-- [x] [AWS DynamoDB](doc/ddb.md)
-- [ ] [AWS S3](doc/s3.md)
+Define an application domain model using product types, which are strongly expressed by records in Erlang.
+
+```erlang
+-type fullname() :: binary().
+-type address()  :: binary().
+-type city()     :: binary().
+
+-record(person, {
+  id      :: binary(),
+  name    :: fullname(),
+  address :: address(), 
+  city    :: city()
+}).
+```
+
+Use semi-automated partial application to make a generic processing for your data domain and spawn an implicit I/O endpoint for ADT. 
+ 
+```erlang
+ddb:start_link(
+  #person{},                    %% an empty ADT defines a type
+  "ddb://dynamodb.eu-west-1.amazonaws.com:443/test",  %% AWS service URI endpoint
+  labelled:encode(#person{}),   %% a labelled generic encoder of ADT
+  labelled:decode(#person{})    %% a labelled generic decoder of ADT
+).
+```
+
+Creates a new entity, or replaces an old entity with a new value.
+
+```erlang
+ddb:put(
+  #person{
+    id      = <<"deadbeef">>,
+    name    = "Verner Pleishner",
+    age     = 64,
+    address = "Blumenstrasse 14, Berne, 3013"
+  }
+)
+```
+
+Lookup the entity
+
+```erlang
+ddb:get(#person{id = <<"deadbeef">>}).
+```
+
+Remove the entity
+
+```erlang
+ddb:remove(#person{id = <<"deadbeef">>}).
+```
+
+Partial update of the entity
+
+```erlang
+ddb:update(#person{id = <<"deadbeef">>, age = 65}).
+```
 
 ## How To Contribute
 

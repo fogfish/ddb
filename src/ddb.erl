@@ -59,8 +59,9 @@
 
 -spec start_link(atom(), uri:uri(), codec(), codec()) -> datum:either(pid()).
 
-start_link(Name, Uri, Encode, Decode) ->
-   pipe:start_link({local, Name}, ?MODULE, [Uri, Encode, Decode], []).
+start_link(Key, Uri, Encode, Decode)
+ when is_binary(Uri) orelse is_list(Uri) ->
+   pipe:start_link({local, typeof(Key)}, ?MODULE, [uri:new(Uri), Encode, Decode], []).
 
 init([Uri, Encode, Decode]) ->
    {ok, handle,
@@ -82,44 +83,44 @@ free(_, _) ->
 %%%------------------------------------------------------------------
 
 %%
-%%
+%% Creates a new entity, or replaces an old entity with a new value.
 -spec put(entity()) -> datum:either(entity()).
 
 put(Value) ->
-   pipe:call(erlang:element(1, Value), {put, Value}, ?TIMEOUT).
+   pipe:call(typeof(Value), {put, Value}, ?TIMEOUT).
 
 %%
-%%
+%% Get entity
 -spec get(entity()) -> datum:either(entity()).
 
 get(Key) ->
-   pipe:call(erlang:element(1, Key), {get, Key}, ?TIMEOUT).
+   pipe:call(typeof(Key), {get, Key}, ?TIMEOUT).
 
 %%
-%%
+%% Remove entity
 -spec remove(entity()) -> datum:either(entity()).
 
 remove(Key) ->
-   pipe:call(erlang:element(1, Key), {remove, Key}, ?TIMEOUT).
+   pipe:call(typeof(Key), {remove, Key}, ?TIMEOUT).
 
 %%
-%%
+%% Partial update (patch an entity)
 -spec update(entity()) -> datum:either(entity()).
 
 update(Value) ->
-   pipe:call(erlang:element(1, Value), {update, Value}, ?TIMEOUT).
+   pipe:call(typeof(Value), {update, Value}, ?TIMEOUT).
 
 %%
-%%
--spec match(entity()) -> datum:either([entity()]).
+%% 
+-spec match(entity()) -> datum:either({[entity()], _}).
 
-match(Key) ->
-   match(Key, #{}).
+match(Pattern) ->
+   match(Pattern, #{}).
 
--spec match(entity(), _) -> datum:either([entity()]).
+-spec match(entity(), _) -> datum:either({[entity()], _}).
 
-match(Key, Opts) ->
-   pipe:call(erlang:element(1, Key), {match, Key, Opts}, ?TIMEOUT).
+match(Pattern, Opts) ->
+   pipe:call(typeof(Pattern), {match, Pattern, Opts}, ?TIMEOUT).
 
 %%%------------------------------------------------------------------
 %%%
@@ -173,11 +174,11 @@ handle({update, Value}, _, #ddb{uri = Uri, bucket = Bucket, encode = Encode} = S
    };
 
 
-handle({match, Query, Opts}, _, #ddb{uri = Uri, bucket = Bucket, encode = Encode, decode = Decode} = State) ->
+handle({match, Pattern, Opts}, _, #ddb{uri = Uri, bucket = Bucket, encode = Encode, decode = Decode} = State) ->
    {reply,
       [either ||
          Config <- aws_auto_config(Uri),
-         ddb_codec:encode(Query, Encode),
+         ddb_codec:encode(Pattern, Encode),
          #ddb2_q{
             items = Items,
             last_evaluated_key = Seq
@@ -251,3 +252,7 @@ config_ddb_endpoint(Uri, Config) ->
       ddb_host   = typecast:c(uri:host(Uri)),
       ddb_port   = uri:port(Uri)
    }.
+
+%%
+typeof(Tuple) -> 
+   erlang:element(1, Tuple).

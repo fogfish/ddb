@@ -3,10 +3,14 @@
 -export([all/0]).
 -export([
    ddb_put/1
-,  ddb_put_invalid_identity/1
+,  ddb_put_identity_binary/1
+,  ddb_put_identity_invalid/1
 ,  ddb_get/1
+,  ddb_get_identity_binary/1
 ,  ddb_remove/1
+,  ddb_remove_identity_binary/1
 ,  ddb_update/1
+,  ddb_update_identity_binary/1
 ,  ddb_match/1
 ]).
 
@@ -27,7 +31,7 @@ all() ->
 %%
 %%
 -record(test, {id, a, b, c, d, e}).
--define(ddb,  uri:new("ddb://dynamodb.eu-west-1.amazonaws.com:443/dev-styx-1-test")).
+-define(ddb,  "ddb://dynamodb.eu-west-1.amazonaws.com:443/test").
 
 %%
 %%
@@ -48,6 +52,8 @@ all() ->
    }
 ).
 
+%%
+%%
 ddb_put(_) ->
    mock_init_put(
       [
@@ -62,16 +68,35 @@ ddb_put(_) ->
    ),
 
    {ok, _} = spawn(),
-   {ok, ?entity} = ddb:put(?entity),
+   Entity  = ?entity,
+   {ok, Entity} = ddb:put(Entity),
 
    mock_free().
 
+ddb_put_identity_binary(_) ->
+   mock_init_put(
+      [
+         {<<"id">>,     {s, <<"test">>}}
+      ,  {<<"a">>,      {n, 1}}
+      ,  {<<"b">>,      {n, 1.0}}
+      ,  {<<"c">>,      {s, <<"0123456789">>}}
+      ,  {<<"d">>,      {bool, true}}
+      ,  {<<"e">>,      {l, [{n, 1}, {n, 1.0}, {s, <<"10">>}, {bool, true}]}}
+      ]
+   ),
 
-ddb_put_invalid_identity(_) ->
+   {ok, _} = spawn(),
+   Entity  = ?entity#test{id = <<"test">>},
+   {ok, Entity} = ddb:put(Entity),
+
+   mock_free().
+
+ddb_put_identity_invalid(_) ->
    {ok, _} = spawn(),
    {error, {badarg, id, undefined}} = ddb:put(#test{}).
 
-
+%%
+%%
 ddb_get(_) ->
    mock_init_get(
       [
@@ -86,10 +111,33 @@ ddb_get(_) ->
    ),
 
    {ok, _} = spawn(),
-   {ok, ?entity} = ddb:get(?key),
+   Entity  = ?entity,
+   Key     = ?key,
+   {ok, Entity} = ddb:get(Key),
 
    mock_free().
 
+ddb_get_identity_binary(_) ->
+   mock_init_get(
+      [
+         {<<"id">>,     <<"test">>}
+      ,  {<<"a">>,      1}
+      ,  {<<"b">>,      1.0}
+      ,  {<<"c">>,      <<"0123456789">>}
+      ,  {<<"d">>,      true}
+      ,  {<<"e">>,      [1, 1.0, <<"10">>, true]}
+      ]
+   ),
+
+   {ok, _} = spawn(),
+   Entity  = ?entity#test{id = <<"test">>},
+   Key     = ?key#test{id = <<"test">>},
+   {ok, Entity} = ddb:get(Key),
+
+   mock_free().
+
+%%
+%%
 ddb_remove(_) ->
    mock_init_remove(
       [
@@ -99,10 +147,26 @@ ddb_remove(_) ->
    ),
 
    {ok, _} = spawn(),
-   {ok, ?key} = ddb:remove(?key),
+   Key     = ?key,
+   {ok, Key} = ddb:remove(Key),
 
    mock_free().
 
+ddb_remove_identity_binary(_) ->
+   mock_init_remove(
+      [
+         {<<"id">>, {s, <<"test">>}}
+      ]
+   ),
+
+   {ok, _} = spawn(),
+   Key     = ?key#test{id = <<"test">>},
+   {ok, Key} = ddb:remove(Key),
+
+   mock_free().
+
+%%
+%%
 ddb_update(_) ->
    mock_init_update(
       [
@@ -119,10 +183,33 @@ ddb_update(_) ->
    ),
 
    {ok, _} = spawn(),
-   {ok, ?entity} = ddb:update(?entity),
+   Entity  = ?entity,
+   {ok, Entity} = ddb:update(Entity),
 
    mock_free().
 
+ddb_update_identity_binary(_) ->
+   mock_init_update(
+      [
+         {<<"id">>, {s, <<"test">>}}
+      ],
+      [
+         {<<"a">>,      {n, 1}}
+      ,  {<<"b">>,      {n, 1.0}}
+      ,  {<<"c">>,      {s, <<"0123456789">>}}
+      ,  {<<"d">>,      {bool, true}}
+      ,  {<<"e">>,      {l, [{n, 1}, {n, 1.0}, {s, <<"10">>}, {bool, true}]}}
+      ]
+   ),
+
+   {ok, _} = spawn(),
+   Entity  = ?entity#test{id = <<"test">>},
+   {ok, Entity} = ddb:update(Entity),
+
+   mock_free().
+
+%%
+%%
 ddb_match(_) ->
    mock_init_match([
       [
@@ -141,15 +228,19 @@ ddb_match(_) ->
 
    mock_free().
 
-%%
-%%
+%%%------------------------------------------------------------------
+%%%
+%%% suite helpers
+%%%
+%%%------------------------------------------------------------------
+
 spawn() ->
-   ddb:start_link(test, ?ddb, labelled:encode(#test{}), labelled:decode(#test{})).
+   ddb:start_link(#test{}, ?ddb, labelled:encode(#test{}), labelled:decode(#test{})).
 
 mock_init_put(Expect) ->
    mock_init(),
    meck:expect(erlcloud_ddb2, put_item, 
-      fun(<<"dev-styx-1-test">>, X, _, #aws_config{}) -> 
+      fun(<<"test">>, X, _, #aws_config{}) -> 
          X = lists:keysort(1, Expect),
          ok
       end
@@ -158,7 +249,7 @@ mock_init_put(Expect) ->
 mock_init_get(Expect) ->
    mock_init(),
    meck:expect(erlcloud_ddb2, get_item,
-      fun(<<"dev-styx-1-test">>, _, _, #aws_config{}) -> 
+      fun(<<"test">>, _, _, #aws_config{}) -> 
          {ok, Expect}
       end
    ).
@@ -166,7 +257,7 @@ mock_init_get(Expect) ->
 mock_init_remove(Expect) ->
    mock_init(),
    meck:expect(erlcloud_ddb2, delete_item,
-      fun(<<"dev-styx-1-test">>, X, _, #aws_config{}) ->
+      fun(<<"test">>, X, _, #aws_config{}) ->
          X = lists:keysort(1, Expect)
       end
    ).
@@ -174,7 +265,7 @@ mock_init_remove(Expect) ->
 mock_init_update(Key, Expect) ->
    mock_init(),
    meck:expect(erlcloud_ddb2, update_item, 
-      fun(<<"dev-styx-1-test">>, K, X, _, #aws_config{}) ->
+      fun(<<"test">>, K, X, _, #aws_config{}) ->
          K = lists:keysort(1, Key),
          X = lists:keysort(1, Expect),
          ok
@@ -184,7 +275,7 @@ mock_init_update(Key, Expect) ->
 mock_init_match(Expect) ->
    mock_init(),
    meck:expect(erlcloud_ddb2, q, 
-      fun(<<"dev-styx-1-test">>, _, _, #aws_config{}) ->
+      fun(<<"test">>, _, _, #aws_config{}) ->
          {ok, #ddb2_q{items = Expect}}
       end
    ).
