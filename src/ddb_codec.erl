@@ -119,6 +119,10 @@ encode_value(Val)
  when is_boolean(Val) ->
    {bool, Val};
 
+encode_value(Val)
+ when is_map(Val) ->
+   {m, [{K, encode_value(V)} || {K, V} <- maps:to_list(Val)]};
+
 encode_value({iri, Prefix, Suffix}) ->
    {s, <<$/, Prefix/binary, $/, Suffix/binary>>}.
 
@@ -150,5 +154,7 @@ decode_value(<<$/, Identity/binary>>) ->
    Suffix  = filename:basename(Identity),
    {iri, Prefix, Suffix};
 
+decode_value([{_, _}| _] = X) ->
+   maps:from_list(X);
 decode_value(X) ->
    X.

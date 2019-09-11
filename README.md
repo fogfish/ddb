@@ -56,7 +56,7 @@ Use semi-automated partial application to make a generic processing for your dat
 ```erlang
 ddb:start_link(
   #person{},                    %% an empty ADT defines a type
-  "ddb://dynamodb.eu-west-1.amazonaws.com:443/test",  %% AWS service URI endpoint
+  "https://dynamodb.eu-west-1.amazonaws.com:443/test",  %% AWS service URI endpoint
   labelled:encode(#person{}),   %% a labelled generic encoder of ADT
   labelled:decode(#person{})    %% a labelled generic decoder of ADT
 ).
