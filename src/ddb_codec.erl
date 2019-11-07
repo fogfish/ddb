@@ -156,5 +156,7 @@ decode_value(<<$/, Identity/binary>>) ->
 
 decode_value([{_, _}| _] = X) ->
    maps:from_list(X);
+decode_value([]) ->
+   #{};
 decode_value(X) ->
    X.
