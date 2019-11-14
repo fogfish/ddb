@@ -143,7 +143,7 @@ handle({get, Key}, _, #ddb{uri = Uri, bucket = Bucket, encode = Encode, decode =
    {reply,
       [either ||
          Config <- aws_auto_config(Uri),
-         ddb_codec:encode(Key, Encode),
+         ddb_codec:encode_key(Key, Encode),
          erlcloud_ddb2:get_item(Bucket, _, [], Config),
          ddb_codec:decode(_, Decode)
       ],
@@ -154,7 +154,7 @@ handle({remove, Key}, _, #ddb{uri = Uri, bucket = Bucket, encode = Encode} = Sta
    {reply,
       [either ||
          Config <- aws_auto_config(Uri),
-         ddb_codec:encode(Key, Encode),
+         ddb_codec:encode_key(Key, Encode),
          erlcloud_ddb2:delete_item(Bucket, _, [], Config),
          cats:unit(Key)
       ],

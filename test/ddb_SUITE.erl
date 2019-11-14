@@ -107,8 +107,12 @@ ddb_put_identity_binary(_) ->
    mock_free().
 
 ddb_put_identity_invalid(_) ->
+   mock_init(),
+
    {ok, _} = spawn(),
-   {error, {badarg, id, undefined}} = ddb:put(#test{}).
+   {error, {badarg, id, undefined}} = ddb:put(#test{}),
+
+   mock_free().
 
 %%
 %%
